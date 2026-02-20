@@ -1,0 +1,57 @@
+{
+  "name": "@booboo.dev/js",
+  "version": "0.3.0",
+  "description": "Official JavaScript SDK for booboo.dev error tracking",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs"
+    },
+    "./vue": {
+      "types": "./dist/vue.d.ts",
+      "import": "./dist/vue.js",
+      "require": "./dist/vue.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vue": "^3.5.0"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.0",
+    "vue": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": { "optional": true },
+    "vue": { "optional": true }
+  },
+  "license": "MIT",
+  "author": "booboo.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/getbooboo/js"
+  },
+  "bugs": {
+    "url": "https://github.com/getbooboo/js/issues"
+  },
+  "homepage": "https://booboo.dev",
+  "keywords": ["error-tracking", "booboo", "monitoring", "javascript", "typescript", "react", "vue"]
+}
