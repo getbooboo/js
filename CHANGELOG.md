@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 (2026-02-23)
+
+### Features
+
+- **Environment support**: `init()` now accepts an `environment` option (e.g. `"production"`, `"staging"`). The value is attached to every event and can be used to filter issues in the dashboard.
+
 ## 0.3.0 (2026-02-20)
 
 ### Features

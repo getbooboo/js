@@ -69,9 +69,10 @@ import { init } from "@booboo.dev/js";
 init({
   dsn: "your-dsn-here",
   endpoint: "https://api.booboo.dev/ingest/", // default
+  environment: "production",
   breadcrumbs: true, // or { console: true, clicks: true, navigation: true, fetch: true }
   maxBreadcrumbs: 30,
-  tags: { environment: "production" },
+  tags: { version: "1.2.3" },
   context: { version: "1.2.3" },
   user: { id: "123" },
   beforeSend: (event) => {
@@ -85,6 +86,7 @@ init({
 |--------|---------|-------------|
 | `dsn` | (required) | Your project's DSN from booboo.dev |
 | `endpoint` | `https://api.booboo.dev/ingest/` | Ingestion endpoint URL |
+| `environment` | `""` | Environment name (e.g. `"production"`, `"staging"`). Attached to every event. |
 | `breadcrumbs` | `true` | Enable/disable automatic breadcrumb capture |
 | `maxBreadcrumbs` | `30` | Maximum breadcrumbs to keep in buffer |
 | `tags` | `{}` | Custom tags attached to every event |

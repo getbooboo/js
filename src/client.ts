@@ -125,6 +125,7 @@ export class BoobooClient {
         },
       },
       tags: { ...this.options.tags, runtime: "browser" },
+      environment: this.options.environment || "",
     };
   }
 

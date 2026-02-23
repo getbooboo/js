@@ -35,6 +35,7 @@ export interface BoobooUser {
 export interface BoobooOptions {
   dsn: string;
   endpoint?: string;
+  environment?: string;
   breadcrumbs?: boolean | BreadcrumbOptions;
   maxBreadcrumbs?: number;
   beforeSend?: (event: BoobooEvent) => BoobooEvent | null;
@@ -54,4 +55,5 @@ export interface BoobooEvent {
     headers: Record<string, string>;
   };
   tags: Record<string, string>;
+  environment: string;
 }
