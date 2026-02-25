@@ -1,5 +1,6 @@
 # @booboo.dev/js
 
+[![CI](https://github.com/getbooboo/js/actions/workflows/ci.yml/badge.svg)](https://github.com/getbooboo/js/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@booboo.dev/js.svg)](https://www.npmjs.com/package/@booboo.dev/js)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
