@@ -1,5 +1,5 @@
-import type { StackFrame } from "./types";
 import { cleanFilename, isAppFrame } from "./stacktrace";
+import type { StackFrame } from "./types";
 
 const CONTEXT_LINES = 5;
 const FETCH_TIMEOUT = 2000;

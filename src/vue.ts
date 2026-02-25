@@ -1,5 +1,5 @@
-import { captureException } from "./index";
 import type { App, ComponentPublicInstance } from "vue";
+import { captureException } from "./index";
 
 interface BoobooVueOptions {
   dsn?: string;

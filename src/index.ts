@@ -1,7 +1,14 @@
-import type { BoobooOptions, BoobooEvent, BoobooUser, Breadcrumb } from "./types";
 import { BoobooClient } from "./client";
+import type { BoobooEvent, BoobooOptions, BoobooUser, Breadcrumb } from "./types";
 
-export type { BoobooOptions, BoobooEvent, BoobooUser, StackFrame, Breadcrumb, BreadcrumbOptions } from "./types";
+export type {
+  BoobooOptions,
+  BoobooEvent,
+  BoobooUser,
+  StackFrame,
+  Breadcrumb,
+  BreadcrumbOptions,
+} from "./types";
 export { parseStack } from "./stacktrace";
 
 let client: BoobooClient | null = null;

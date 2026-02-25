@@ -44,16 +44,16 @@ export function parseStack(error: Error): StackFrame[] {
         frames.push({
           filename: match[3],
           function: match[2] || "<anonymous>",
-          lineno: parseInt(match[4], 10),
-          colno: parseInt(match[5], 10),
+          lineno: Number.parseInt(match[4], 10),
+          colno: Number.parseInt(match[5], 10),
         });
       } else {
         // "at file:line:col"
         frames.push({
           filename: match[6],
           function: "<anonymous>",
-          lineno: parseInt(match[7], 10),
-          colno: parseInt(match[8], 10),
+          lineno: Number.parseInt(match[7], 10),
+          colno: Number.parseInt(match[8], 10),
         });
       }
       continue;
@@ -64,8 +64,8 @@ export function parseStack(error: Error): StackFrame[] {
       frames.push({
         filename: match[2],
         function: match[1] || "<anonymous>",
-        lineno: parseInt(match[3], 10),
-        colno: parseInt(match[4], 10),
+        lineno: Number.parseInt(match[3], 10),
+        colno: Number.parseInt(match[4], 10),
       });
     }
   }

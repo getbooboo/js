@@ -1,8 +1,8 @@
-import type { BoobooOptions, BoobooEvent, BoobooUser, StackFrame } from "./types";
-import { parseStack } from "./stacktrace";
+import { addBreadcrumb, clearBreadcrumbs, getBreadcrumbs, setupBreadcrumbs } from "./breadcrumbs";
 import { enrichFrames } from "./source";
-import { setupBreadcrumbs, getBreadcrumbs, addBreadcrumb, clearBreadcrumbs } from "./breadcrumbs";
+import { parseStack } from "./stacktrace";
 import { Transport } from "./transport";
+import type { BoobooEvent, BoobooOptions, BoobooUser, StackFrame } from "./types";
 
 const DEFAULT_ENDPOINT = "https://api.booboo.dev/ingest/";
 
@@ -130,11 +130,12 @@ export class BoobooClient {
   }
 
   private sendEvent(event: BoobooEvent): void {
+    let eventToSend = event;
     if (this.options.beforeSend) {
       const modified = this.options.beforeSend(event);
       if (modified === null) return;
-      event = modified;
+      eventToSend = modified;
     }
-    this.transport.send(event);
+    this.transport.send(eventToSend);
   }
 }

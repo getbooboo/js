@@ -36,7 +36,7 @@ function instrumentConsole(): TeardownFn {
 
   for (const level of Object.keys(originals) as (keyof typeof originals)[]) {
     const original = originals[level];
-    console[level] = function (...args: unknown[]) {
+    console[level] = (...args: unknown[]) => {
       addBreadcrumb({
         type: "console",
         category: level,
@@ -61,14 +61,15 @@ function instrumentClicks(): TeardownFn {
     const tag = target.tagName?.toLowerCase() || "";
     const text = (target as HTMLElement).innerText?.slice(0, 50) || "";
     const id = target.id ? `#${target.id}` : "";
-    const cls = target.className && typeof target.className === "string"
-      ? `.${target.className.split(" ").slice(0, 2).join(".")}`
-      : "";
+    const cls =
+      target.className && typeof target.className === "string"
+        ? `.${target.className.split(" ").slice(0, 2).join(".")}`
+        : "";
 
     addBreadcrumb({
       type: "click",
       category: "ui",
-      message: `${tag}${id}${cls}` + (text ? ` "${text}"` : ""),
+      message: `${tag}${id}${cls}${text ? ` "${text}"` : ""}`,
     });
   };
 
@@ -150,10 +151,7 @@ function instrumentFetch(): TeardownFn {
   };
 }
 
-export function setupBreadcrumbs(
-  options: boolean | BreadcrumbOptions,
-  max?: number,
-): TeardownFn {
+export function setupBreadcrumbs(options: boolean | BreadcrumbOptions, max?: number): TeardownFn {
   maxBreadcrumbs = max ?? DEFAULT_MAX;
   breadcrumbBuffer = [];
 
