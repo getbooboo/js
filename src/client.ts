@@ -4,6 +4,8 @@ import { parseStack } from "./stacktrace";
 import { Transport } from "./transport";
 import type { BoobooEvent, BoobooOptions, BoobooUser, StackFrame } from "./types";
 
+declare const __SDK_VERSION__: string;
+
 const DEFAULT_ENDPOINT = "https://api.booboo.dev/ingest/";
 
 export class BoobooClient {
@@ -116,7 +118,7 @@ export class BoobooClient {
           screen: `${screen.width}x${screen.height}`,
           viewport: `${window.innerWidth}x${window.innerHeight}`,
         },
-        sdk: { name: "@booboo.dev/js", version: "0.3.0" },
+        sdk: { name: "@booboo.dev/js", version: __SDK_VERSION__ },
       },
       request: {
         url: window.location.href,
