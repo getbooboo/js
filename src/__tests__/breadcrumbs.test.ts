@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { addBreadcrumb, clearBreadcrumbs, getBreadcrumbs, setupBreadcrumbs } from "../breadcrumbs";
+import { addBreadcrumb, clearBreadcrumbs, getBreadcrumbs, setupBreadcrumbs, setupFetchOnly } from "../breadcrumbs";
 
 // --- addBreadcrumb / getBreadcrumbs ---
 
@@ -171,5 +171,53 @@ describe("fetch instrumentation", () => {
     const crumbs = getBreadcrumbs();
     expect(crumbs).toHaveLength(1);
     expect(crumbs[0].message).toContain("[failed]");
+  });
+
+  it("calls onHttpError callback with status, method, url", async () => {
+    const onHttpError = vi.fn();
+    globalThis.fetch = vi.fn().mockResolvedValue({ status: 500 });
+    teardown = setupBreadcrumbs({ console: false, clicks: false, navigation: false, fetch: true }, undefined, onHttpError);
+
+    await fetch("https://api.example.com/data", { method: "POST" });
+    expect(onHttpError).toHaveBeenCalledWith(500, "POST", "https://api.example.com/data");
+  });
+
+  it("calls onHttpError for all responses (filtering is caller's job)", async () => {
+    const onHttpError = vi.fn();
+    globalThis.fetch = vi.fn().mockResolvedValue({ status: 200 });
+    teardown = setupBreadcrumbs({ console: false, clicks: false, navigation: false, fetch: true }, undefined, onHttpError);
+
+    await fetch("https://api.example.com/ok");
+    expect(onHttpError).toHaveBeenCalledWith(200, "GET", "https://api.example.com/ok");
+  });
+
+  it("does not call onHttpError when not provided", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({ status: 500 });
+    teardown = setupBreadcrumbs({ console: false, clicks: false, navigation: false, fetch: true });
+
+    // Should not throw even without callback
+    await fetch("https://api.example.com/data");
+    expect(getBreadcrumbs()).toHaveLength(1);
+  });
+});
+
+// --- setupFetchOnly ---
+
+describe("setupFetchOnly", () => {
+  const originalFetch = globalThis.fetch;
+  let teardown: () => void;
+
+  afterEach(() => {
+    teardown?.();
+    globalThis.fetch = originalFetch;
+  });
+
+  it("instruments fetch with onHttpError only, no breadcrumbs setup", async () => {
+    const onHttpError = vi.fn();
+    globalThis.fetch = vi.fn().mockResolvedValue({ status: 503 });
+    teardown = setupFetchOnly(onHttpError);
+
+    await fetch("https://api.example.com/fail");
+    expect(onHttpError).toHaveBeenCalledWith(503, "GET", "https://api.example.com/fail");
   });
 });

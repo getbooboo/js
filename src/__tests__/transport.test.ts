@@ -76,4 +76,16 @@ describe("Transport", () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.message).toBe("flush-test");
   });
+
+  it("drain() is callable and resolves", async () => {
+    const transport = new Transport("https://api.example.com/ingest/", "test-dsn");
+    await expect(transport.drain()).resolves.toBeUndefined();
+  });
+
+  it("drain() resolves after sending queued events", async () => {
+    const transport = new Transport("https://api.example.com/ingest/", "test-dsn");
+    transport.send({ message: "drain-test" } as any);
+    await transport.drain();
+    expect(fetchMock).toHaveBeenCalled();
+  });
 });

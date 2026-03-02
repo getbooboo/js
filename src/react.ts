@@ -1,6 +1,38 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { captureException, getClient } from "./index";
 
+export function boobooQueryIntegration() {
+  return {
+    queryCache: {
+      onError: (error: unknown, query: { queryHash?: string; queryKey?: unknown }) => {
+        const err = error instanceof Error ? error : new Error(String(error));
+        captureException(err, {
+          tanstackQuery: {
+            queryHash: query?.queryHash,
+            queryKey: query?.queryKey,
+          },
+        });
+      },
+    },
+    mutationCache: {
+      onError: (
+        error: unknown,
+        _variables: unknown,
+        _context: unknown,
+        mutation: { mutationId?: number; options?: { mutationKey?: unknown } },
+      ) => {
+        const err = error instanceof Error ? error : new Error(String(error));
+        captureException(err, {
+          tanstackQuery: {
+            mutationId: mutation?.mutationId,
+            mutationKey: mutation?.options?.mutationKey,
+          },
+        });
+      },
+    },
+  };
+}
+
 interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode | ((error: Error, reset: () => void) => ReactNode);

@@ -25,7 +25,7 @@ export class Transport {
     this.drain();
   }
 
-  private async drain(): Promise<void> {
+  async drain(): Promise<void> {
     if (this.flushing) return;
     this.flushing = true;
 

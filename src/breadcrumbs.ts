@@ -118,7 +118,7 @@ function instrumentNavigation(): TeardownFn {
   };
 }
 
-function instrumentFetch(): TeardownFn {
+function instrumentFetch(onHttpError?: (status: number, method: string, url: string) => void): TeardownFn {
   const origFetch = window.fetch;
 
   window.fetch = async function (input, init) {
@@ -134,6 +134,7 @@ function instrumentFetch(): TeardownFn {
         message: `${method} ${url} [${response.status}]`,
         data: { method, url, status: response.status, duration: Date.now() - start },
       });
+      onHttpError?.(response.status, method, url);
       return response;
     } catch (err) {
       addBreadcrumb({
@@ -151,7 +152,7 @@ function instrumentFetch(): TeardownFn {
   };
 }
 
-export function setupBreadcrumbs(options: boolean | BreadcrumbOptions, max?: number): TeardownFn {
+export function setupBreadcrumbs(options: boolean | BreadcrumbOptions, max?: number, onHttpError?: (status: number, method: string, url: string) => void): TeardownFn {
   maxBreadcrumbs = max ?? DEFAULT_MAX;
   breadcrumbBuffer = [];
 
@@ -164,9 +165,13 @@ export function setupBreadcrumbs(options: boolean | BreadcrumbOptions, max?: num
   if (opts.console !== false) teardowns.push(instrumentConsole());
   if (opts.clicks !== false) teardowns.push(instrumentClicks());
   if (opts.navigation !== false) teardowns.push(instrumentNavigation());
-  if (opts.fetch !== false) teardowns.push(instrumentFetch());
+  if (opts.fetch !== false) teardowns.push(instrumentFetch(onHttpError));
 
   return () => {
     for (const fn of teardowns) fn();
   };
+}
+
+export function setupFetchOnly(onHttpError: (status: number, method: string, url: string) => void): TeardownFn {
+  return instrumentFetch(onHttpError);
 }

@@ -25,7 +25,7 @@ That's it. Unhandled errors and promise rejections are automatically captured.
 ## Manual Capture
 
 ```javascript
-import { captureException, captureMessage } from "@booboo.dev/js";
+import { captureException, captureMessage, flush } from "@booboo.dev/js";
 
 try {
   riskyOperation();
@@ -34,6 +34,9 @@ try {
 }
 
 captureMessage("Something noteworthy happened", "warning");
+
+// Drain pending events (e.g. before shutdown)
+await flush();
 ```
 
 ## User Context
@@ -93,7 +96,54 @@ init({
 | `tags` | `{}` | Custom tags attached to every event |
 | `context` | `{}` | Custom context attached to every event |
 | `user` | `null` | Initial user context |
+| `captureHttpErrors` | `false` | Auto-capture HTTP errors from fetch. `true` = 5xx, `[429, 500]` = specific codes, or object with `statuses` and `targets` |
 | `beforeSend` | `null` | Hook to modify or drop events before sending |
+
+## HTTP Error Capture
+
+Automatically capture HTTP errors from `fetch()` requests:
+
+```javascript
+import { init } from "@booboo.dev/js";
+
+// Capture all 5xx responses
+init({ dsn: "your-dsn-here", captureHttpErrors: true });
+
+// Or specify exact status codes
+init({ dsn: "your-dsn-here", captureHttpErrors: [429, 500, 502, 503] });
+
+// Filter by URL to avoid capturing errors from third-party services
+init({
+  dsn: "your-dsn-here",
+  captureHttpErrors: {
+    targets: ["api.myapp.com", /^https:\/\/internal\./],
+  },
+});
+
+// Combine specific statuses with URL filtering
+init({
+  dsn: "your-dsn-here",
+  captureHttpErrors: {
+    statuses: [429, 500, 502, 503],
+    targets: ["api.myapp.com"],
+  },
+});
+```
+
+### Axios
+
+For Axios, use the `axiosErrorInterceptor` helper:
+
+```javascript
+import axios from "axios";
+import { axiosErrorInterceptor } from "@booboo.dev/js";
+
+const api = axios.create({ baseURL: "/api" });
+api.interceptors.response.use(null, axiosErrorInterceptor());
+
+// Custom status codes
+api.interceptors.response.use(null, axiosErrorInterceptor({ statuses: [429, 500] }));
+```
 
 ## React
 
@@ -122,6 +172,21 @@ The `fallback` prop also accepts a render function:
 </ErrorBoundary>
 ```
 
+### React Query
+
+Automatically capture errors from TanStack Query / React Query. Query keys, hashes, and mutation IDs are included as context for easier debugging:
+
+```javascript
+import { QueryClient, QueryCache, MutationCache } from "@tanstack/react-query";
+import { boobooQueryIntegration } from "@booboo.dev/js/react";
+
+const b = boobooQueryIntegration();
+const queryClient = new QueryClient({
+  queryCache: new QueryCache(b.queryCache),
+  mutationCache: new MutationCache(b.mutationCache),
+});
+```
+
 ## Vue
 
 ```javascript
@@ -139,11 +204,15 @@ app.mount("#app");
 ## Features
 
 - Automatic capture of unhandled errors and promise rejections
+- Automatic HTTP error capture from `fetch()` with `captureHttpErrors`
 - Stack trace parsing for Chrome, Firefox, and Safari
 - Source context enrichment
 - Automatic breadcrumbs (console, clicks, navigation, fetch)
 - React `ErrorBoundary` component
+- React Query / TanStack Query integration
+- Axios error interceptor
 - Vue 3 plugin
+- `flush()` to drain pending events before shutdown
 - `beforeSend` hook for event filtering
 - Custom tags, context, and user data
 - Non-blocking event delivery with page visibility flush

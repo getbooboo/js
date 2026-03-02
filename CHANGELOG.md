@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.5.0 (2026-03-02)
+
+### Features
+
+- **`flush()`** — drain pending events before shutdown (e.g. `await booboo.flush()` in `beforeunload`)
+- **`captureHttpErrors`** — auto-capture HTTP 5xx (or custom status codes) from `fetch()` requests. Supports object form with `targets` for URL filtering (string or RegExp) to scope which domains are monitored.
+- **`boobooQueryIntegration()`** — React Query / TanStack Query helper for automatic error capture from queries and mutations. Includes query keys, hashes, and mutation IDs as context for easier debugging.
+- **`axiosErrorInterceptor()`** — Axios response error interceptor for automatic HTTP error capture
+
+## 0.4.1 (2026-02-25)
+
+### Fixes
+
+- Fix SDK version in event payloads — was hardcoded to `0.3.0` instead of using the actual package version
+
 ## 0.4.0 (2026-02-23)
 
 ### Features

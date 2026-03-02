@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { captureException, captureMessage, getClient, init, setUser } from "../index";
+import { axiosErrorInterceptor, captureException, captureMessage, flush, getClient, init, setUser } from "../index";
 
 // Mock enrichFrames to skip source fetching
 vi.mock("../source", () => ({
@@ -64,5 +64,74 @@ describe("public API (index)", () => {
     // The module-level client persists, but after destroy it still exists
     // This tests the basic contract
     expect(getClient()).toBeDefined(); // It's the last init'd client until module reload
+  });
+
+  it("flush delegates to client.flush", async () => {
+    const client = init({ dsn: "test-dsn", breadcrumbs: false });
+    const spy = vi.spyOn(client, "flush").mockResolvedValue(undefined);
+    await flush();
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it("flush is no-op when uninitialized", async () => {
+    // Should not throw
+    await flush();
+  });
+});
+
+describe("axiosErrorInterceptor", () => {
+  afterEach(() => {
+    getClient()?.destroy();
+  });
+
+  it("captures 5xx errors by default", async () => {
+    const client = init({ dsn: "test-dsn", breadcrumbs: false });
+    const spy = vi.spyOn(client, "captureException");
+    const interceptor = axiosErrorInterceptor();
+
+    const axiosError = Object.assign(new Error("Request failed"), {
+      response: { status: 500 },
+      config: { method: "post", url: "/api/data" },
+    });
+
+    await expect(interceptor(axiosError)).rejects.toBe(axiosError);
+    expect(spy).toHaveBeenCalled();
+    expect(spy.mock.calls[0][0].name).toBe("HttpError");
+  });
+
+  it("ignores non-5xx errors by default", async () => {
+    const client = init({ dsn: "test-dsn", breadcrumbs: false });
+    const spy = vi.spyOn(client, "captureException");
+    const interceptor = axiosErrorInterceptor();
+
+    const axiosError = Object.assign(new Error("Not found"), {
+      response: { status: 404 },
+      config: { method: "get", url: "/api/missing" },
+    });
+
+    await expect(interceptor(axiosError)).rejects.toBe(axiosError);
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it("respects custom statuses", async () => {
+    const client = init({ dsn: "test-dsn", breadcrumbs: false });
+    const spy = vi.spyOn(client, "captureException");
+    const interceptor = axiosErrorInterceptor({ statuses: [429] });
+
+    const axiosError = Object.assign(new Error("Too many requests"), {
+      response: { status: 429 },
+      config: { method: "get", url: "/api/rate-limited" },
+    });
+
+    await expect(interceptor(axiosError)).rejects.toBe(axiosError);
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it("always re-rejects the original error", async () => {
+    init({ dsn: "test-dsn", breadcrumbs: false });
+    const interceptor = axiosErrorInterceptor();
+
+    const originalError = new Error("network fail");
+    await expect(interceptor(originalError)).rejects.toBe(originalError);
   });
 });

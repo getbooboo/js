@@ -9,9 +9,11 @@ vi.mock("../source", () => ({
 
 // Mock Transport — capture send calls via a shared array
 const sendCalls: any[] = [];
+const drainMock = vi.fn().mockResolvedValue(undefined);
 vi.mock("../transport", () => ({
   Transport: vi.fn().mockImplementation(() => ({
     send: vi.fn((event: any) => sendCalls.push(event)),
+    drain: drainMock,
   })),
 }));
 
@@ -24,6 +26,7 @@ describe("BoobooClient", () => {
     prevOnError = window.onerror;
     prevOnUnhandledRejection = window.onunhandledrejection;
     sendCalls.length = 0;
+    drainMock.mockClear();
 
     client = new BoobooClient({
       dsn: "test-dsn",
@@ -134,5 +137,174 @@ describe("BoobooClient", () => {
 
     expect(sendCalls).toHaveLength(0);
     clientWithHook.destroy();
+  });
+
+  it("flush() delegates to transport.drain()", async () => {
+    await client.flush();
+    expect(drainMock).toHaveBeenCalled();
+  });
+
+  it("captureException respects error.name for exception_type", async () => {
+    const error = new Error("http fail");
+    error.name = "HttpError";
+    client.captureException(error);
+
+    await vi.waitFor(() => expect(sendCalls.length).toBeGreaterThan(0));
+    expect(sendCalls[0].exception_type).toBe("HttpError");
+  });
+
+  it("captureHttpErrors captures 5xx by default", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockResolvedValue({ status: 502 });
+
+    const httpClient = new BoobooClient({
+      dsn: "test-dsn",
+      endpoint: "https://api.example.com/ingest/",
+      breadcrumbs: false,
+      captureHttpErrors: true,
+    });
+
+    await fetch("https://api.example.com/fail", { method: "POST" });
+
+    await vi.waitFor(() => expect(sendCalls.length).toBeGreaterThan(0));
+    expect(sendCalls[sendCalls.length - 1].exception_type).toBe("HttpError");
+    expect(sendCalls[sendCalls.length - 1].message).toContain("502");
+
+    httpClient.destroy();
+    globalThis.fetch = originalFetch;
+  });
+
+  it("captureHttpErrors ignores non-5xx when set to true", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockResolvedValue({ status: 404 });
+    sendCalls.length = 0;
+
+    const httpClient = new BoobooClient({
+      dsn: "test-dsn",
+      endpoint: "https://api.example.com/ingest/",
+      breadcrumbs: false,
+      captureHttpErrors: true,
+    });
+
+    await fetch("https://api.example.com/missing");
+
+    // Give time for async processing
+    await new Promise((r) => setTimeout(r, 50));
+    expect(sendCalls).toHaveLength(0);
+
+    httpClient.destroy();
+    globalThis.fetch = originalFetch;
+  });
+
+  it("captureHttpErrors with custom statuses", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockResolvedValue({ status: 429 });
+
+    const httpClient = new BoobooClient({
+      dsn: "test-dsn",
+      endpoint: "https://api.example.com/ingest/",
+      breadcrumbs: false,
+      captureHttpErrors: [429, 500],
+    });
+
+    await fetch("https://api.example.com/rate-limited");
+
+    await vi.waitFor(() => expect(sendCalls.length).toBeGreaterThan(0));
+    expect(sendCalls[sendCalls.length - 1].message).toContain("429");
+
+    httpClient.destroy();
+    globalThis.fetch = originalFetch;
+  });
+
+  it("captureHttpErrors object form with statuses and targets", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockResolvedValue({ status: 500 });
+
+    const httpClient = new BoobooClient({
+      dsn: "test-dsn",
+      endpoint: "https://api.example.com/ingest/",
+      breadcrumbs: false,
+      captureHttpErrors: {
+        statuses: [429, 500],
+        targets: ["api.myapp.com"],
+      },
+    });
+
+    await fetch("https://api.myapp.com/data");
+
+    await vi.waitFor(() => expect(sendCalls.length).toBeGreaterThan(0));
+    expect(sendCalls[sendCalls.length - 1].exception_type).toBe("HttpError");
+    expect(sendCalls[sendCalls.length - 1].message).toContain("500");
+
+    httpClient.destroy();
+    globalThis.fetch = originalFetch;
+  });
+
+  it("captureHttpErrors with targets filters non-matching URLs", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockResolvedValue({ status: 500 });
+    sendCalls.length = 0;
+
+    const httpClient = new BoobooClient({
+      dsn: "test-dsn",
+      endpoint: "https://api.example.com/ingest/",
+      breadcrumbs: false,
+      captureHttpErrors: {
+        targets: ["api.myapp.com"],
+      },
+    });
+
+    await fetch("https://cdn.thirdparty.com/script.js");
+
+    await new Promise((r) => setTimeout(r, 50));
+    expect(sendCalls).toHaveLength(0);
+
+    httpClient.destroy();
+    globalThis.fetch = originalFetch;
+  });
+
+  it("captureHttpErrors with RegExp targets", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockResolvedValue({ status: 502 });
+
+    const httpClient = new BoobooClient({
+      dsn: "test-dsn",
+      endpoint: "https://api.example.com/ingest/",
+      breadcrumbs: false,
+      captureHttpErrors: {
+        targets: [/api\.myapp\.com/],
+      },
+    });
+
+    await fetch("https://api.myapp.com/users");
+
+    await vi.waitFor(() => expect(sendCalls.length).toBeGreaterThan(0));
+    expect(sendCalls[sendCalls.length - 1].exception_type).toBe("HttpError");
+
+    httpClient.destroy();
+    globalThis.fetch = originalFetch;
+  });
+
+  it("captureHttpErrors with only targets uses default 5xx statuses", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockResolvedValue({ status: 404 });
+    sendCalls.length = 0;
+
+    const httpClient = new BoobooClient({
+      dsn: "test-dsn",
+      endpoint: "https://api.example.com/ingest/",
+      breadcrumbs: false,
+      captureHttpErrors: {
+        targets: ["api.myapp.com"],
+      },
+    });
+
+    await fetch("https://api.myapp.com/missing");
+
+    await new Promise((r) => setTimeout(r, 50));
+    expect(sendCalls).toHaveLength(0);
+
+    httpClient.destroy();
+    globalThis.fetch = originalFetch;
   });
 });
