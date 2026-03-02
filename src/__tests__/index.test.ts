@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { axiosErrorInterceptor, captureException, captureMessage, flush, getClient, init, setUser } from "../index";
+import {
+  axiosErrorInterceptor,
+  captureException,
+  captureMessage,
+  flush,
+  getClient,
+  init,
+  setUser,
+} from "../index";
 
 // Mock enrichFrames to skip source fetching
 vi.mock("../source", () => ({

@@ -118,7 +118,9 @@ function instrumentNavigation(): TeardownFn {
   };
 }
 
-function instrumentFetch(onHttpError?: (status: number, method: string, url: string) => void): TeardownFn {
+function instrumentFetch(
+  onHttpError?: (status: number, method: string, url: string) => void,
+): TeardownFn {
   const origFetch = window.fetch;
 
   window.fetch = async function (input, init) {
@@ -152,7 +154,11 @@ function instrumentFetch(onHttpError?: (status: number, method: string, url: str
   };
 }
 
-export function setupBreadcrumbs(options: boolean | BreadcrumbOptions, max?: number, onHttpError?: (status: number, method: string, url: string) => void): TeardownFn {
+export function setupBreadcrumbs(
+  options: boolean | BreadcrumbOptions,
+  max?: number,
+  onHttpError?: (status: number, method: string, url: string) => void,
+): TeardownFn {
   maxBreadcrumbs = max ?? DEFAULT_MAX;
   breadcrumbBuffer = [];
 
@@ -172,6 +178,8 @@ export function setupBreadcrumbs(options: boolean | BreadcrumbOptions, max?: num
   };
 }
 
-export function setupFetchOnly(onHttpError: (status: number, method: string, url: string) => void): TeardownFn {
+export function setupFetchOnly(
+  onHttpError: (status: number, method: string, url: string) => void,
+): TeardownFn {
   return instrumentFetch(onHttpError);
 }

@@ -1,4 +1,10 @@
-import { addBreadcrumb, clearBreadcrumbs, getBreadcrumbs, setupBreadcrumbs, setupFetchOnly } from "./breadcrumbs";
+import {
+  addBreadcrumb,
+  clearBreadcrumbs,
+  getBreadcrumbs,
+  setupBreadcrumbs,
+  setupFetchOnly,
+} from "./breadcrumbs";
 import { enrichFrames } from "./source";
 import { parseStack } from "./stacktrace";
 import { Transport } from "./transport";
@@ -62,11 +68,9 @@ export class BoobooClient {
       }
 
       httpErrorCallback = (status: number, method: string, url: string) => {
-        const statusMatch = statuses
-          ? statuses.includes(status)
-          : status >= 500 && status <= 599;
+        const statusMatch = statuses ? statuses.includes(status) : status >= 500 && status <= 599;
         const targetMatch = targets
-          ? targets.some(t => typeof t === "string" ? url.includes(t) : t.test(url))
+          ? targets.some((t) => (typeof t === "string" ? url.includes(t) : t.test(url)))
           : true;
         if (statusMatch && targetMatch) {
           const error = new Error(`HTTP ${status}: ${method} ${url}`);

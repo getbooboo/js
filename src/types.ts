@@ -42,10 +42,13 @@ export interface BoobooOptions {
   tags?: Record<string, string>;
   context?: Record<string, unknown>;
   user?: BoobooUser;
-  captureHttpErrors?: boolean | number[] | {
-    statuses?: number[];
-    targets?: (string | RegExp)[];
-  };
+  captureHttpErrors?:
+    | boolean
+    | number[]
+    | {
+        statuses?: number[];
+        targets?: (string | RegExp)[];
+      };
 }
 
 export interface BoobooEvent {

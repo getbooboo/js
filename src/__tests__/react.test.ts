@@ -3,7 +3,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 // Mock react before importing react.ts (optional peer dep, not installed in test env)
 vi.mock("react", () => ({
   Component: class Component {
-    render() { return null; }
+    render() {
+      return null;
+    }
   },
 }));
 

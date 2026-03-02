@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { addBreadcrumb, clearBreadcrumbs, getBreadcrumbs, setupBreadcrumbs, setupFetchOnly } from "../breadcrumbs";
+import {
+  addBreadcrumb,
+  clearBreadcrumbs,
+  getBreadcrumbs,
+  setupBreadcrumbs,
+  setupFetchOnly,
+} from "../breadcrumbs";
 
 // --- addBreadcrumb / getBreadcrumbs ---
 
@@ -176,7 +182,11 @@ describe("fetch instrumentation", () => {
   it("calls onHttpError callback with status, method, url", async () => {
     const onHttpError = vi.fn();
     globalThis.fetch = vi.fn().mockResolvedValue({ status: 500 });
-    teardown = setupBreadcrumbs({ console: false, clicks: false, navigation: false, fetch: true }, undefined, onHttpError);
+    teardown = setupBreadcrumbs(
+      { console: false, clicks: false, navigation: false, fetch: true },
+      undefined,
+      onHttpError,
+    );
 
     await fetch("https://api.example.com/data", { method: "POST" });
     expect(onHttpError).toHaveBeenCalledWith(500, "POST", "https://api.example.com/data");
@@ -185,7 +195,11 @@ describe("fetch instrumentation", () => {
   it("calls onHttpError for all responses (filtering is caller's job)", async () => {
     const onHttpError = vi.fn();
     globalThis.fetch = vi.fn().mockResolvedValue({ status: 200 });
-    teardown = setupBreadcrumbs({ console: false, clicks: false, navigation: false, fetch: true }, undefined, onHttpError);
+    teardown = setupBreadcrumbs(
+      { console: false, clicks: false, navigation: false, fetch: true },
+      undefined,
+      onHttpError,
+    );
 
     await fetch("https://api.example.com/ok");
     expect(onHttpError).toHaveBeenCalledWith(200, "GET", "https://api.example.com/ok");

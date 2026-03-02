@@ -23,9 +23,7 @@
       "require": "./dist/vue.cjs"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -69,13 +67,5 @@
     "url": "https://github.com/getbooboo/js/issues"
   },
   "homepage": "https://booboo.dev",
-  "keywords": [
-    "error-tracking",
-    "booboo",
-    "monitoring",
-    "javascript",
-    "typescript",
-    "react",
-    "vue"
-  ]
+  "keywords": ["error-tracking", "booboo", "monitoring", "javascript", "typescript", "react", "vue"]
 }

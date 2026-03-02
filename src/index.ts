@@ -48,9 +48,17 @@ export async function flush(): Promise<void> {
 export function axiosErrorInterceptor(options?: { statuses?: number[] }) {
   const statuses = options?.statuses ?? [500, 501, 502, 503, 504];
   return (error: unknown): Promise<never> => {
-    const ax = error as { response?: { status?: number }; config?: { method?: string; url?: string } };
+    const ax = error as {
+      response?: { status?: number };
+      config?: { method?: string; url?: string };
+    };
     if (ax?.response?.status && statuses.includes(ax.response.status)) {
-      const err = error instanceof Error ? error : new Error(`HTTP ${ax.response.status}: ${(ax.config?.method || "GET").toUpperCase()} ${ax.config?.url || "unknown"}`);
+      const err =
+        error instanceof Error
+          ? error
+          : new Error(
+              `HTTP ${ax.response.status}: ${(ax.config?.method || "GET").toUpperCase()} ${ax.config?.url || "unknown"}`,
+            );
       err.name = "HttpError";
       captureException(err);
     }
