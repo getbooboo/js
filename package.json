@@ -1,6 +1,6 @@
 {
   "name": "@booboo.dev/js",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Official JavaScript SDK for booboo.dev error tracking",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -23,7 +23,9 @@
       "require": "./dist/vue.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -50,8 +52,12 @@
     "vue": ">=3.0.0"
   },
   "peerDependenciesMeta": {
-    "react": { "optional": true },
-    "vue": { "optional": true }
+    "react": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
   },
   "license": "MIT",
   "author": "booboo.dev",
@@ -63,5 +69,13 @@
     "url": "https://github.com/getbooboo/js/issues"
   },
   "homepage": "https://booboo.dev",
-  "keywords": ["error-tracking", "booboo", "monitoring", "javascript", "typescript", "react", "vue"]
+  "keywords": [
+    "error-tracking",
+    "booboo",
+    "monitoring",
+    "javascript",
+    "typescript",
+    "react",
+    "vue"
+  ]
 }
