@@ -107,6 +107,8 @@ export class BoobooClient {
   }
 
   captureException(error: Error, extra?: Record<string, unknown>): void {
+    if (this.shouldIgnoreError(error)) return;
+
     const frames = parseStack(error);
     // Fire-and-forget: enrich frames with source context, then send
     enrichFrames(frames).then((enriched) => {
@@ -115,13 +117,14 @@ export class BoobooClient {
         error.name || error.constructor.name || "Error",
         enriched,
         extra,
+        "error",
       );
       this.sendEvent(event);
     });
   }
 
-  captureMessage(message: string, level: "error" | "warning" | "info" = "error"): void {
-    const event = this.buildEvent(message, "Error", [], undefined, level);
+  captureMessage(message: string, level: "error" | "warning" | "info" = "info"): void {
+    const event = this.buildEvent(message, "", [], undefined, level);
     this.sendEvent(event);
   }
 
@@ -137,12 +140,23 @@ export class BoobooClient {
     clearBreadcrumbs();
   }
 
+  private shouldIgnoreError(error: Error): boolean {
+    const patterns = this.options.ignoreErrors;
+    if (!patterns || patterns.length === 0) return false;
+    return patterns.some((pattern) => {
+      if (typeof pattern === "string") {
+        return error.name === pattern;
+      }
+      return pattern.test(error.name) || pattern.test(error.message);
+    });
+  }
+
   private buildEvent(
     message: string,
     exceptionType: string,
     stacktrace: StackFrame[],
     extra?: Record<string, unknown>,
-    level: "error" | "warning" | "info" = "error",
+    level: "error" | "warning" | "info" = "info",
   ): BoobooEvent {
     return {
       message,

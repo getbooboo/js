@@ -38,6 +38,7 @@ export interface BoobooOptions {
   environment?: string;
   breadcrumbs?: boolean | BreadcrumbOptions;
   maxBreadcrumbs?: number;
+  ignoreErrors?: (string | RegExp)[];
   beforeSend?: (event: BoobooEvent) => BoobooEvent | null;
   tags?: Record<string, string>;
   context?: Record<string, unknown>;

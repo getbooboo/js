@@ -79,6 +79,14 @@ init({
   tags: { version: "1.2.3" },
   context: { version: "1.2.3" },
   user: { id: "123" },
+  ignoreErrors: [
+    "ResizeObserver",           // exact match on error.name
+    /network/i,                  // regex on name or message
+    /Loading chunk \d+ failed/,  // ignore lazy-load failures
+  ],
+  captureHttpErrors: {
+    targets: [/api\.myapp\.com/],
+  },
   beforeSend: (event) => {
     // Return null to drop the event, or modify and return it
     return event;
@@ -96,6 +104,7 @@ init({
 | `tags` | `{}` | Custom tags attached to every event |
 | `context` | `{}` | Custom context attached to every event |
 | `user` | `null` | Initial user context |
+| `ignoreErrors` | `[]` | Errors to suppress. Strings match `error.name` exactly; RegExps test against both `error.name` and `error.message`. |
 | `captureHttpErrors` | `false` | Auto-capture HTTP errors from fetch. `true` = 5xx, `[429, 500]` = specific codes, or object with `statuses` and `targets` |
 | `beforeSend` | `null` | Hook to modify or drop events before sending |
 

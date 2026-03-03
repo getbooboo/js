@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0 (2026-03-03)
+
+### Features
+
+- **`ignoreErrors`**: New `ignoreErrors` option on `init()` to suppress noisy or expected errors from being reported. Accepts an array of strings and/or RegExps — strings match `error.name` exactly, RegExps test against both `error.name` and `error.message`. Filtering runs before stack parsing for zero overhead on ignored errors.
+
 ## 0.5.0 (2026-03-02)
 
 ### Features

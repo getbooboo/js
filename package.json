@@ -1,6 +1,6 @@
 {
   "name": "@booboo.dev/js",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Official JavaScript SDK for booboo.dev error tracking",
   "type": "module",
   "main": "./dist/index.cjs",

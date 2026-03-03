@@ -93,13 +93,13 @@ describe("BoobooClient", () => {
     expect(sendCalls[0].context.user).toBeUndefined();
   });
 
-  it("captureMessage sends with default error level", () => {
+  it("captureMessage sends with default info level", () => {
     client.captureMessage("something happened");
 
     expect(sendCalls).toHaveLength(1);
     expect(sendCalls[0].message).toBe("something happened");
-    expect(sendCalls[0].level).toBe("error");
-    expect(sendCalls[0].exception_type).toBe("Error");
+    expect(sendCalls[0].level).toBe("info");
+    expect(sendCalls[0].exception_type).toBe("");
   });
 
   it("captureMessage accepts custom level", () => {
@@ -151,6 +151,111 @@ describe("BoobooClient", () => {
 
     await vi.waitFor(() => expect(sendCalls.length).toBeGreaterThan(0));
     expect(sendCalls[0].exception_type).toBe("HttpError");
+  });
+
+  it("ignoreErrors string match suppresses by error name", async () => {
+    const error = new Error("something broke");
+    error.name = "ResizeObserver";
+    sendCalls.length = 0;
+
+    const c = new BoobooClient({
+      dsn: "test-dsn",
+      endpoint: "https://api.example.com/ingest/",
+      breadcrumbs: false,
+      ignoreErrors: ["ResizeObserver"],
+    });
+
+    c.captureException(error);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(sendCalls).toHaveLength(0);
+    c.destroy();
+  });
+
+  it("ignoreErrors regex matches on error message", async () => {
+    sendCalls.length = 0;
+
+    const c = new BoobooClient({
+      dsn: "test-dsn",
+      endpoint: "https://api.example.com/ingest/",
+      breadcrumbs: false,
+      ignoreErrors: [/Loading chunk \d+ failed/],
+    });
+
+    c.captureException(new Error("Loading chunk 42 failed"));
+    await new Promise((r) => setTimeout(r, 50));
+    expect(sendCalls).toHaveLength(0);
+    c.destroy();
+  });
+
+  it("ignoreErrors regex matches on error name", async () => {
+    const error = new Error("loop limit");
+    error.name = "ResizeObserver loop completed";
+    sendCalls.length = 0;
+
+    const c = new BoobooClient({
+      dsn: "test-dsn",
+      endpoint: "https://api.example.com/ingest/",
+      breadcrumbs: false,
+      ignoreErrors: [/ResizeObserver/],
+    });
+
+    c.captureException(error);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(sendCalls).toHaveLength(0);
+    c.destroy();
+  });
+
+  it("ignoreErrors case-insensitive regex", async () => {
+    sendCalls.length = 0;
+
+    const c = new BoobooClient({
+      dsn: "test-dsn",
+      endpoint: "https://api.example.com/ingest/",
+      breadcrumbs: false,
+      ignoreErrors: [/network/i],
+    });
+
+    c.captureException(new Error("Network request failed"));
+    await new Promise((r) => setTimeout(r, 50));
+    expect(sendCalls).toHaveLength(0);
+    c.destroy();
+  });
+
+  it("ignoreErrors mixed strings and regexps", async () => {
+    sendCalls.length = 0;
+
+    const c = new BoobooClient({
+      dsn: "test-dsn",
+      endpoint: "https://api.example.com/ingest/",
+      breadcrumbs: false,
+      ignoreErrors: ["TypeError", /chunk \d+/],
+    });
+
+    c.captureException(new TypeError("cannot read property"));
+    c.captureException(new Error("Loading chunk 5 failed"));
+    c.captureException(new Error("real error"));
+
+    await vi.waitFor(() => expect(sendCalls.length).toBeGreaterThan(0));
+    // Only the "real error" should get through
+    expect(sendCalls).toHaveLength(1);
+    expect(sendCalls[0].message).toBe("real error");
+    c.destroy();
+  });
+
+  it("ignoreErrors empty array has no effect", async () => {
+    sendCalls.length = 0;
+
+    const c = new BoobooClient({
+      dsn: "test-dsn",
+      endpoint: "https://api.example.com/ingest/",
+      breadcrumbs: false,
+      ignoreErrors: [],
+    });
+
+    c.captureException(new Error("should pass"));
+    await vi.waitFor(() => expect(sendCalls.length).toBeGreaterThan(0));
+    expect(sendCalls[0].message).toBe("should pass");
+    c.destroy();
   });
 
   it("captureHttpErrors captures 5xx by default", async () => {
