@@ -12,7 +12,29 @@ import type { BoobooEvent, BoobooOptions, BoobooUser, StackFrame } from "./types
 
 declare const __SDK_VERSION__: string;
 
-const DEFAULT_ENDPOINT = "https://api.booboo.dev/ingest/";
+const DEFAULT_ENDPOINT = "https://ingest.booboo.dev/";
+
+/**
+ * Accepts a bare token or a URL-style DSN like
+ * `https://TOKEN@host[/path]`. The path is decorative — only the
+ * scheme + host are used to derive the ingest endpoint.
+ */
+function parseDsn(dsn: string): { token: string; endpoint?: string } {
+  if (dsn.startsWith("http://") || dsn.startsWith("https://")) {
+    try {
+      const url = new URL(dsn);
+      if (url.username && url.hostname) {
+        return {
+          token: decodeURIComponent(url.username),
+          endpoint: `${url.protocol}//${url.host}/`,
+        };
+      }
+    } catch {
+      // fall through to bare-token handling
+    }
+  }
+  return { token: dsn };
+}
 
 export class BoobooClient {
   private options: BoobooOptions;
@@ -25,8 +47,9 @@ export class BoobooClient {
 
   constructor(options: BoobooOptions) {
     this.options = options;
-    const endpoint = options.endpoint || DEFAULT_ENDPOINT;
-    this.transport = new Transport(endpoint, options.dsn);
+    const { token, endpoint: derivedEndpoint } = parseDsn(options.dsn);
+    const endpoint = options.endpoint || derivedEndpoint || DEFAULT_ENDPOINT;
+    this.transport = new Transport(endpoint, token);
 
     // Install global handlers
     this.prevOnError = window.onerror;
