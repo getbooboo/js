@@ -1,8 +1,14 @@
 # Changelog
 
-## 0.8.0 (2026-06-10)
+## 0.8.0 (2026-08-20)
+
+### Fixes
+
+- **Delivery failures are visible.** A rejected event (wrong DSN → 403, quota → 429) or an unreachable endpoint used to fail silently. The transport now `console.warn`s with the server's reason, rate-limited to once per minute per cause, so a broken install no longer looks like "no errors yet".
 
 ### Features
+
+- **`debug` option**: `init({ debug: true })` logs every send and drop to the console.
 
 - **`release` option**: `init({ release: "<git sha>" })` attaches a release identifier to every event. booboo uses it to match source maps uploaded with the same release, so minified production stack traces resolve to your original source. See https://booboo.dev/docs/source-maps.
 

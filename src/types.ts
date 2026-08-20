@@ -38,6 +38,11 @@ export interface BoobooOptions {
   environment?: string;
   /** Release identifier (e.g. a git SHA) used to match uploaded source maps. */
   release?: string;
+  /**
+   * Log every send and drop to the console. Rejected or undeliverable events
+   * are always reported with console.warn (once per minute per cause).
+   */
+  debug?: boolean;
   breadcrumbs?: boolean | BreadcrumbOptions;
   maxBreadcrumbs?: number;
   ignoreErrors?: (string | RegExp)[];

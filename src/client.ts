@@ -49,7 +49,7 @@ export class BoobooClient {
     this.options = options;
     const { token, endpoint: derivedEndpoint } = parseDsn(options.dsn);
     const endpoint = options.endpoint || derivedEndpoint || DEFAULT_ENDPOINT;
-    this.transport = new Transport(endpoint, token);
+    this.transport = new Transport(endpoint, token, { debug: !!options.debug });
 
     // Install global handlers
     this.prevOnError = window.onerror;
