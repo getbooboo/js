@@ -46,6 +46,17 @@ export class Transport {
     this.drain();
   }
 
+  /**
+   * Announce the install to the server so the project shows "connected"
+   * before any error happens. Not an event: skips beforeSend, doesn't count
+   * toward quota. Failures surface through the same warnings as events.
+   */
+  handshake(sdk: string): void {
+    if (!this.dsn) return;
+    this.queue.push({ handshake: true, sdk } as unknown as BoobooEvent);
+    this.drain();
+  }
+
   async drain(): Promise<void> {
     if (this.flushing) return;
     this.flushing = true;

@@ -43,6 +43,8 @@ export interface BoobooOptions {
    * are always reported with console.warn (once per minute per cause).
    */
   debug?: boolean;
+  /** Send an init() handshake so the project shows "connected" before the first error. Default true. */
+  handshake?: boolean;
   breadcrumbs?: boolean | BreadcrumbOptions;
   maxBreadcrumbs?: number;
   ignoreErrors?: (string | RegExp)[];

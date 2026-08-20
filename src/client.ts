@@ -50,6 +50,9 @@ export class BoobooClient {
     const { token, endpoint: derivedEndpoint } = parseDsn(options.dsn);
     const endpoint = options.endpoint || derivedEndpoint || DEFAULT_ENDPOINT;
     this.transport = new Transport(endpoint, token, { debug: !!options.debug });
+    if (options.handshake !== false) {
+      this.transport.handshake(`js/${__SDK_VERSION__}`);
+    }
 
     // Install global handlers
     this.prevOnError = window.onerror;

@@ -13,6 +13,7 @@ const drainMock = vi.fn().mockResolvedValue(undefined);
 vi.mock("../transport", () => ({
   Transport: vi.fn().mockImplementation(() => ({
     send: vi.fn((event: any) => sendCalls.push(event)),
+    handshake: vi.fn(),
     drain: drainMock,
   })),
 }));

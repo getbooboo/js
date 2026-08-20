@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.0 (2026-08-20)
+
+### Features
+
+- **Install handshake.** `init()` sends a tiny `{ handshake: true }` ping so your project shows as *connected* in the dashboard before the first error happens. Not an event: it never counts toward your quota and `beforeSend` doesn't see it. Opt out with `init({ handshake: false })`.
+
 ## 0.8.0 (2026-08-20)
 
 ### Fixes

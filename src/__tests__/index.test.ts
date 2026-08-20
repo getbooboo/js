@@ -16,7 +16,7 @@ vi.mock("../source", () => ({
 
 // Mock Transport
 vi.mock("../transport", () => ({
-  Transport: vi.fn().mockImplementation(() => ({ send: vi.fn() })),
+  Transport: vi.fn().mockImplementation(() => ({ send: vi.fn(), handshake: vi.fn() })),
 }));
 
 describe("public API (index)", () => {

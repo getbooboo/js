@@ -6,7 +6,7 @@ const transportCtor = vi.fn();
 vi.mock("../transport", () => ({
   Transport: vi.fn().mockImplementation((endpoint: string, dsn: string) => {
     transportCtor(endpoint, dsn);
-    return { send: sendMock, drain: drainMock };
+    return { send: sendMock, handshake: vi.fn(), drain: drainMock };
   }),
 }));
 vi.mock("../source", () => ({
