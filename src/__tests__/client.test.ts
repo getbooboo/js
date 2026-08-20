@@ -68,10 +68,25 @@ describe("BoobooClient", () => {
     expect(event.exception_type).toBe("Error");
     expect(event.level).toBe("error");
     expect(event.environment).toBe("test");
+    expect(event.release).toBe("");
     expect(event.tags.runtime).toBe("browser");
     expect(event.context.sdk.name).toBe("@booboo.dev/js");
     expect(event.context.browser).toBeDefined();
     expect(event.request.url).toBeDefined();
+  });
+
+  it("captureException includes release when configured", async () => {
+    client.destroy();
+    client = new BoobooClient({
+      dsn: "test-dsn",
+      endpoint: "https://api.example.com/ingest/",
+      release: "abc1234",
+      breadcrumbs: false,
+    });
+    client.captureException(new Error("with release"));
+
+    await vi.waitFor(() => expect(sendCalls.length).toBeGreaterThan(0));
+    expect(sendCalls[0].release).toBe("abc1234");
   });
 
   it("captureException includes user context via setUser", async () => {

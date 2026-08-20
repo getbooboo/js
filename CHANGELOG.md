@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.0 (2026-06-10)
+
+### Features
+
+- **`release` option**: `init({ release: "<git sha>" })` attaches a release identifier to every event. booboo uses it to match source maps uploaded with the same release, so minified production stack traces resolve to your original source. See https://booboo.dev/docs/source-maps.
+
 ## 0.7.0 (2026-05-13)
 
 ### Features

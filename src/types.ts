@@ -36,6 +36,8 @@ export interface BoobooOptions {
   dsn: string;
   endpoint?: string;
   environment?: string;
+  /** Release identifier (e.g. a git SHA) used to match uploaded source maps. */
+  release?: string;
   breadcrumbs?: boolean | BreadcrumbOptions;
   maxBreadcrumbs?: number;
   ignoreErrors?: (string | RegExp)[];
@@ -64,4 +66,5 @@ export interface BoobooEvent {
   };
   tags: Record<string, string>;
   environment: string;
+  release: string;
 }

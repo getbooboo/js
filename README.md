@@ -99,6 +99,7 @@ init({
 | `dsn` | (required) | Your project's DSN from booboo.dev |
 | `endpoint` | `https://api.booboo.dev/ingest/` | Ingestion endpoint URL |
 | `environment` | `""` | Environment name (e.g. `"production"`, `"staging"`). Attached to every event. |
+| `release` | `""` | Release identifier (e.g. a git SHA). Used to match [uploaded source maps](https://booboo.dev/docs/source-maps) so minified production stack traces resolve to your original code. |
 | `breadcrumbs` | `true` | Enable/disable automatic breadcrumb capture |
 | `maxBreadcrumbs` | `30` | Maximum breadcrumbs to keep in buffer |
 | `tags` | `{}` | Custom tags attached to every event |
